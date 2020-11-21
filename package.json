@@ -2,37 +2,19 @@
   "name": "vscode-extension-auto-import",
   "displayName": "Auto Import - ES6, TS, JSX, TSX",
   "description": "Automatically finds, parses and provides code actions and code completion for all available imports. Works with JavaScript and TypeScript. [Forked]",
-  "version": "1.4.3",
+  "version": "2.0.0",
   "contributors": [
     {
-      "name": "soates",
-      "url": "https://github.com/soates"
-    },
-    {
-      "name": "lukeautry",
-      "url": "https://github.com/lukeautry"
-    },
-    {
-      "name": "zhaoshengjun",
-      "url": "https://github.com/zhaoshengjun"
-    },
-    {
-      "name": "third774",
-      "url": "https://github.com/third774"
-    },
-    {
-      "name": "martinoppitz",
-      "url": "https://github.com/martinoppitz"
+      "name": "Rebecca Vest",
+      "email": "olserebe@hotmail.com",
+      "url": "https://codehouse.dev"
     }
   ],
-  "publisher": "NuclleaR",
+  "publisher": "Codehouse",
   "engines": {
-    "vscode": "^0.10.10"
+    "vscode": "^1.51.0"
   },
-  "galleryBanner": {
-    "color": "#2d4794",
-    "theme": "dark"
-  },
+  "repository": "https://www.github.com/idahogurl/vscode-extension-auto-import",
   "keywords": [
     "javascript",
     "typescript",
@@ -64,7 +46,7 @@
         "autoimport.filesToScan": {
           "type": "string",
           "default": "**/*.{js,jsx,ts,tsx}",
-          "description": "Glob for files to watch and scan, e.g ./src/** ./src/app/**/*.ts. Defaults to **/*.{ts,tsx}"
+          "description": "Glob for files to watch and scan, e.g ./src/** ./src/app/**/*.ts. Defaults to **/*.{js,jsx,ts,tsx}"
         },
         "autoimport.absolute": {
           "type": "boolean",
@@ -112,19 +94,38 @@
   "icon": "icon.png",
   "homepage": "https://github.com/NuclleaR/vscode-extension-auto-import",
   "scripts": {
+    "lint": "eslint .",
+    "pretest": "yarn run lint",
+    "test": "node ./test/runTest.js",
+    "dev": "yarn compile && NODE_ENV=dev yarn rollup --config rollup.dev.config.js --watch",
+    "build": "yarn vscode:prepublish && NODE_ENV=prod yarn rollup --config rollup.prod.config.js",
     "vscode:prepublish": "tsc -p ./",
     "compile": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "package": "yarn build && vsce package --yarn"
   },
   "devDependencies": {
-    "@types/node": "7.0.8",
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-replace": "^2.3.4",
     "@types/mocha": "2.2.40",
-    "mocha": "3.2.0",
-    "typescript": "2.2.1",
-    "vscode": "1.1.0"
+    "@types/node": "^14.14.9",
+    "@types/vscode": "^1.51.0",
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
+    "eslint": "^7.14.0",
+    "eslint-config-airbnb-typescript": "^12.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "mocha": "^8.2.1",
+    "prettier": "^2.2.0",
+    "prettier-eslint": "^11.0.0",
+    "rollup": "^2.33.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^4.1.2",
+    "vsce": "^1.81.1"
   },
   "dependencies": {
-    "lodash": "4.17.4",
+    "globby": "^11.0.1",
+    "lodash": "^4.17.20",
     "node-json-db": "0.7.3"
   }
 }
