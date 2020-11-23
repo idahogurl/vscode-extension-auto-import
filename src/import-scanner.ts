@@ -1,12 +1,21 @@
-import * as FS from 'fs';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
-import * as _ from 'lodash';
-import * as globby from 'globby';
+import * as fg from 'fast-glob';
+import * as parser from '@gerhobbelt/gitignore-parser';
+
 import { NodeUpload } from './node-upload';
 
 import { ImportDb } from './import-db';
 import { ImportStatusBar } from './import-status-bar';
 
+function parseGitIgnore() {
+  const gitignoreFile = `${vscode.workspace.rootPath}/.gitignore`;
+  return fs.existsSync(gitignoreFile)
+    ? parser.compile(fs.readFileSync(gitignoreFile, { encoding: 'utf-8' }))
+    : undefined;
+}
+
+const { rootPath } = vscode.workspace;
 export class ImportScanner {
   private scanStarted: Date;
 
@@ -20,38 +29,69 @@ export class ImportScanner {
 
   private higherOrderComponents: string;
 
-  constructor(private config: vscode.WorkspaceConfiguration) {
-    this.filesToScan = this.config.get<string>('filesToScan');
+  private outputChannel: vscode.OutputChannel;
+
+  private readonly ignoreEntries: string[];
+
+  constructor(private config: vscode.WorkspaceConfiguration, outputChannel: vscode.OutputChannel) {
+    this.filesToScan = `**/*.${this.config.get<string>('extensions')}`;
     this.showNotifications = this.config.get<boolean>('showNotifications');
     this.higherOrderComponents = this.config.get<string>('higherOrderComponents');
+    this.outputChannel = outputChannel;
+    this.ignoreEntries = [
+      '!typings',
+      '!.history',
+      '!jspm_packages',
+      '*.test.js',
+      'node_modules',
+      '!test/**/fixtures/**',
+      '*.config.js',
+    ];
   }
 
-  public async scan(request: any): Promise<void> {
+  private filterEntries(entries: string[], entryType: string) {
+    const gitignore = parseGitIgnore();
+    const filtered = gitignore ? entries.filter((e) => gitignore.accepts(e, true)) : entries;
+
+    this.outputChannel.appendLine(`'${entryType} found', ${filtered.length.toString(10)}`);
+    return filtered;
+  }
+
+  public scan(request: any): void {
     this.showOutput = request.showOutput ? request.showOutput : false;
 
     if (this.showOutput) {
       this.scanStarted = new Date();
     }
-    const gitignore = FS.readFileSync(`${vscode.workspace.rootPath}/.gitignore`, {
-      encoding: 'utf-8'
-    });
-    const exclude = gitignore.split('\n');
-    const files = await globby(
-      [
-        '!typings',
-        '!.history',
-        '!jspm_packages',
-        'test/**/*.test.js',
-        '!**/node_modules/**',
-        '!test/**/fixtures/**',
-        this.filesToScan
-      ].concat(exclude),
-      { cwd: vscode.workspace.rootPath }
-    );
-    const fileCount = files.length;
-    for (let i = 0; i < fileCount; i++) {
-      this.loadFile(files[i], i === fileCount - 1);
+
+    try {
+      const files = fg.sync(this.filesToScan, {
+        cwd: rootPath,
+        onlyFiles: true,
+        ignore: this.ignoreEntries,
+      });
+      const filtered = this.filterEntries(files, 'Files');
+      const entryCount = filtered.length;
+      for (let i = 0; i < entryCount; i++) {
+        this.loadFile(`${rootPath}/${filtered[i]}`, i === entryCount - 1);
+      }
+    } catch (e) {
+      console.log(e);
     }
+  }
+
+  public getDirectories() {
+    try {
+      const directories = fg.sync('**', {
+        cwd: vscode.workspace.rootPath,
+        onlyDirectories: true,
+        ignore: this.ignoreEntries,
+      });
+      return this.filterEntries(directories, 'Directories');
+    } catch (e) {
+      console.log(e);
+    }
+    return [];
   }
 
   public edit(request: any): void {
@@ -66,7 +106,7 @@ export class ImportScanner {
   }
 
   private loadFile(fsPath: string, last: boolean): void {
-    FS.readFile(fsPath, 'utf8', (err, data) => {
+    fs.readFile(fsPath, 'utf8', (err, data) => {
       if (err) {
         return console.log(err);
       }
@@ -81,7 +121,7 @@ export class ImportScanner {
         this.scanEnded = new Date();
 
         const str = `[AutoImport] cache creation complete - (${Math.abs(
-          <any>this.scanStarted - <any>this.scanEnded
+          <any>this.scanStarted - <any>this.scanEnded,
         )}ms)`;
 
         vscode.window.showInformationMessage(str);
@@ -93,7 +133,7 @@ export class ImportScanner {
     // added code to support any other middleware that the component can  be nested in.
     const regExp = new RegExp(
       `(export\\s?(default)?\\s?(class|interface|let|var|const|function)?) ((${this.higherOrderComponents}).+[, (])?(\\w+)`,
-      'g'
+      'g',
     );
 
     const matches = data.match(regExp);

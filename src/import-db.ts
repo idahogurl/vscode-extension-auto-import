@@ -4,8 +4,11 @@ import { PathHelper } from './helpers/path-helper';
 
 export class ImportObject {
   name: string;
+
   file: vscode.Uri;
+
   isDefault: boolean;
+
   discovered: boolean;
 
   constructor(name: string, file: vscode.Uri, isDefault: boolean, discovered: boolean = false) {
@@ -28,7 +31,7 @@ export class ImportObject {
     }
     return PathHelper.normalisePath(
       PathHelper.getRelativePath(basePath, this.file.fsPath),
-      absolute
+      absolute,
     );
   }
 }
@@ -50,7 +53,7 @@ export class ImportDb {
 
   public static delete(request: any): void {
     try {
-      let index = ImportDb.imports.findIndex((m) => m.file.fsPath === request.file.fsPath);
+      const index = ImportDb.imports.findIndex((m) => m.file.fsPath === request.file.fsPath);
 
       if (index !== -1) {
         ImportDb.imports.splice(index, 1);
@@ -63,7 +66,7 @@ export class ImportDb {
     data: any,
     file: any,
     isDefault: boolean = false,
-    discovered: boolean
+    discovered: boolean,
   ): void {
     name = name.trim();
 
@@ -71,10 +74,10 @@ export class ImportDb {
       return;
     }
 
-    let obj: ImportObject = new ImportObject(name, file, isDefault, discovered);
+    const obj: ImportObject = new ImportObject(name, file, isDefault, discovered);
 
-    let exists = ImportDb.imports.findIndex(
-      (m) => m.name === obj.name && m.file.fsPath === file.fsPath
+    const exists = ImportDb.imports.findIndex(
+      (m) => m.name === obj.name && m.file.fsPath === file.fsPath,
     );
 
     if (exists === -1) {

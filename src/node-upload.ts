@@ -7,17 +7,14 @@ import { ImportDb } from './import-db';
 export class NodeUpload {
   private filesToScan: string;
 
-  private useAutoImportNet: boolean;
-
   constructor(private config: vscode.WorkspaceConfiguration) {
-    this.filesToScan = this.config.get<string>('filesToScan');
-    this.useAutoImportNet = this.config.get<boolean>('useAutoImportNet');
+    this.filesToScan = `*/*.${this.config.get<string>('extensions')}`;
   }
 
   public scanNodeModules() {
     this.getMappings().then((mappings) => {
-      for (let key in mappings) {
-        let map = mappings[key];
+      for (const key in mappings) {
+        const map = mappings[key];
         if (map) {
           map.forEach((exp) => {
             ImportDb.saveImport(exp, exp, { fsPath: key }, false, true);
@@ -29,9 +26,9 @@ export class NodeUpload {
 
   public getMappings(): Promise<any> {
     return new Promise<any>((resolve) => {
-      let mappings = {};
+      const mappings = {};
 
-      let mapArrayToLocation = (exports, location) => {
+      const mapArrayToLocation = (exports, location) => {
         if (mappings[location]) {
           mappings[location] = (<any>mappings[location]).concat(exports);
         } else {
@@ -46,15 +43,15 @@ export class NodeUpload {
               return console.log(err);
             }
 
-            let matches = data.match(/\bimport\s+(?:.+\s+from\s+)?[\'"]([^"\']+)["\']/g);
+            const matches = data.match(/\bimport\s+(?:.+\s+from\s+)?[\'"]([^"\']+)["\']/g);
             if (matches) {
               matches.forEach((m) => {
                 if (m.indexOf('./') === -1 && m.indexOf('!') === -1) {
-                  let exports = m.match(/\bimport\s+(?:.+\s+from\s+)/),
-                    location = m.match(/[\'"]([^"\']+)["\']/g);
+                  const exports = m.match(/\bimport\s+(?:.+\s+from\s+)/);
+                  const location = m.match(/[\'"]([^"\']+)["\']/g);
 
                   if (exports && location) {
-                    let exportArray = exports[0]
+                    const exportArray = exports[0]
                       .replace('import', '')
                       .replace('{', '')
                       .replace('}', '')
@@ -72,7 +69,7 @@ export class NodeUpload {
             }
 
             if (i == files.length - 1) {
-              for (let key in mappings) {
+              for (const key in mappings) {
                 if (mappings.hasOwnProperty(key)) {
                   mappings[key] = _.uniq(mappings[key]);
                 }
