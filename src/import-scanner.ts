@@ -47,6 +47,9 @@ export class ImportScanner {
       '!test/**/fixtures/**',
       '*.config.js',
     ];
+    this.scanStarted = null;
+    this.scanEnded = null;
+    this.showOutput = false;
   }
 
   private filterEntries(entries: string[], entryType: string) {
@@ -65,12 +68,14 @@ export class ImportScanner {
     }
 
     try {
+      console.log('scanning');
       const files = fg.sync(this.filesToScan, {
         cwd: rootPath,
         onlyFiles: true,
         ignore: this.ignoreEntries,
       });
       const filtered = this.filterEntries(files, 'Files');
+      console.log('filtered', filtered.length);
       const entryCount = filtered.length;
       for (let i = 0; i < entryCount; i++) {
         this.loadFile(`${rootPath}/${filtered[i]}`, i === entryCount - 1);

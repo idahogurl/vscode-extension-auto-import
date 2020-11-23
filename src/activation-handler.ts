@@ -60,7 +60,7 @@ export class ActivationHandler {
       ['javascript', 'javascriptreact', 'typescript', 'typescriptreact'],
       new ImportCompletion(
         this.context,
-        vscode.workspace.getConfiguration('autoimport').get<boolean>('autoComplete'),
+        vscode.workspace.getConfiguration('autoimport').get<boolean>('autoComplete') || false,
       ),
       '',
     );
@@ -85,15 +85,16 @@ export class ActivationHandler {
   }
 
   public attachFileWatcher(): void {
+    console.log('attachFileWatcher');
     const config = vscode.workspace.getConfiguration('autoimport');
     const scanner = new ImportScanner(config, this.outputChannel);
 
     const directories = scanner.getDirectories();
-
+    console.log('directoryCt', directories.length);
     for (let i = 0; i < directories.length; i++) {
       const directory = directories[i];
       const watcher = vscode.workspace.createFileSystemWatcher(
-        `${directory}/*.${config.extensions}`,
+        `${vscode.workspace.rootPath}/${directory}/*.${config.extensions}`,
       );
 
       watcher.onDidChange((file: vscode.Uri) => {

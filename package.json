@@ -31,7 +31,7 @@
     "onLanguage:typescript",
     "onLanguage:typescriptreact"
   ],
-  "main": "./out/src/extension",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -46,7 +46,7 @@
         "autoimport.extensions": {
           "type": "string",
           "default": "{js,jsx,ts,tsx}",
-          "description": "Glob for files to watch and scan, e.g ./src/** ./src/app/**/*.ts. Defaults to **/*.{js,jsx,ts,tsx}"
+          "description": "Glob for files types to watch and scan. Defaults to {js,jsx,ts,tsx}"
         },
         "autoimport.absolute": {
           "type": "boolean",
@@ -82,11 +82,6 @@
           "type": "boolean",
           "default": true,
           "description": "Adds found items to intellisense and automatically imports then"
-        },
-        "autoimport.higherOrderComponents": {
-          "type": "string",
-          "default": "connect|withRouter",
-          "description": "This allows the importer to find your components name bypass the higher order components that you wrap it in. Each higher order component must be deliminated by pipe |. example: connect|withRouter"
         }
       }
     }
@@ -95,9 +90,9 @@
   "homepage": "https://github.com/NuclleaR/vscode-extension-auto-import",
   "scripts": {
     "lint": "eslint .",
-    "pretest": "yarn run lint",
     "test": "node ./test/runTest.js",
-    "dev": "yarn compile && NODE_ENV=dev yarn rollup --config rollup.dev.config.js --watch",
+    "dev": "yarn compile",
+    "dev:build": "NODE_ENV=dev yarn rollup --config rollup.dev.config.js --watch",
     "build": "yarn vscode:prepublish && NODE_ENV=prod yarn rollup --config rollup.prod.config.js",
     "vscode:prepublish": "tsc -p ./",
     "compile": "tsc -watch -p ./",
@@ -121,10 +116,12 @@
     "rollup": "^2.33.3",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.1.2",
-    "vsce": "^1.81.1"
+    "vsce": "^1.81.1",
+    "vscode-test": "^1.4.1"
   },
   "dependencies": {
     "@gerhobbelt/gitignore-parser": "^0.2.0-8",
+    "@types/lodash": "^4.14.165",
     "fast-glob": "^3.2.4",
     "lodash": "^4.17.20",
     "node-json-db": "0.7.3"

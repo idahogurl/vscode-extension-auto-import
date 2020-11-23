@@ -15,7 +15,7 @@ export class ImportAction implements vscode.CodeActionProvider {
     document: vscode.TextDocument,
     range: vscode.Range,
     context: vscode.CodeActionContext,
-    token: vscode.CancellationToken,
+    token: vscode.CancellationToken
   ): vscode.Command[] {
     const actionContext = this.createContext(document, range, context, token);
 
@@ -32,9 +32,10 @@ export class ImportAction implements vscode.CodeActionProvider {
     }
 
     if (diagnostic.message.includes('is not defined')) {
-      const imp = diagnostic.message.match(/'(.+)'/g)[0].replace(/'/g, '');
+      const imp = diagnostic.message.match(/'(.+)'/g);
+
       try {
-        const found = ImportDb.getImport(imp);
+        const found = ImportDb.getImport(imp ? imp[0].replace(/'/g, '') : '');
 
         if (found) {
           context.imports = found;
@@ -72,17 +73,19 @@ export class ImportAction implements vscode.CodeActionProvider {
   private actionHandler(context: Context): vscode.Command[] {
     const handlers = [];
     context.imports.forEach((imp) => {
-      handlers.push({
-        title: `Import ${imp.name} from ${imp.getPath(context.document)}`,
-        command: 'extension.fixImport',
-        arguments: [
-          context.document,
-          context.range,
-          context.context,
-          context.token,
-          context.imports,
-        ],
-      });
+      if (imp) {
+        handlers.push({
+          title: `Import ${imp.name} from ${imp.getPath(context.document)}`,
+          command: 'extension.fixImport',
+          arguments: [
+            context.document,
+            context.range,
+            context.context,
+            context.token,
+            context.imports,
+          ],
+        });
+      }
     });
 
     return handlers;
@@ -92,7 +95,7 @@ export class ImportAction implements vscode.CodeActionProvider {
     document: vscode.TextDocument,
     range: vscode.Range,
     context: vscode.CodeActionContext,
-    token: vscode.CancellationToken,
+    token: vscode.CancellationToken
   ): Context {
     return {
       document,

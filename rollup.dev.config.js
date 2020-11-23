@@ -4,11 +4,12 @@ import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 
 export default {
-  input: './out/src/extension.js',
+  input: './out/extension.js',
   output: {
     file: './dist/extension.js',
     format: 'cjs',
-    sourcemap: true
+    sourcemap: true,
+    exports: 'default',
   },
   plugins: [
     resolve({ preferBuiltins: true }),
@@ -16,8 +17,8 @@ export default {
     replace({
       exclude: 'node_modules/**',
       'function commonjsRequire': 'function commonJsRequire',
-      commonjsRequire: 'require'
-    })
+      commonjsRequire: 'require',
+    }),
   ],
-  external: ['vscode', 'fs', 'path', 'module', 'stream', 'util', 'os', 'events']
+  external: ['vscode', 'fs', 'path', 'module', 'stream', 'util', 'os', 'events'],
 };

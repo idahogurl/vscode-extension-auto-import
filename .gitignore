@@ -4,3 +4,5 @@ icon
 yarn-error.log
 dist
 .vscode
+.vscode-test/
+*.vsix

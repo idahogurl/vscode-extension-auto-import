@@ -20,10 +20,14 @@ module.exports = {
       if (vscode.workspace.rootPath === undefined) {
         return false;
       }
+      console.log('GOT HERE');
 
       const extension = new ActivationHandler(context, outputChannel);
+      console.log('GOT HERE 2');
       extension.attachCommands();
+      console.log('HELLO');
       extension.attachFileWatcher();
+      console.log('bob');
       scanIfRequired();
     } catch (error) {
       ErrorHelper.handle(error);
