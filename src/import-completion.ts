@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { PathHelper } from './helpers/path-helper';
 import { ImportDb, ImportObject } from './import-db';
 import { ImportFixer } from './import-fixer';
 
@@ -12,38 +11,37 @@ export class ImportCompletion implements vscode.CompletionItemProvider {
     context.subscriptions.push(fixer);
   }
 
-  public provideCompletionItems(
+  async provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
-    token: vscode.CancellationToken,
+    token: vscode.CancellationToken
   ): Promise<vscode.CompletionItem[]> {
     if (!this.enabled) {
-      return Promise.resolve([]);
+      return [];
     }
 
-    return new Promise((resolve, reject) => {
-      let wordToComplete = '';
+    let wordToComplete = '';
 
-      const range = document.getWordRangeAtPosition(position);
+    const range = document.getWordRangeAtPosition(position);
 
-      if (range) {
-        wordToComplete = document.getText(new vscode.Range(range.start, position)).toLowerCase();
-      }
-
-      return resolve(
-        ImportDb.all()
-          .filter((f) => f.name.toLowerCase().indexOf(wordToComplete) > -1)
-          .map((i) => this.buildCompletionItem(i, document)),
-      );
-    });
+    if (range) {
+      wordToComplete = document.getText(new vscode.Range(range.start, position)).toLowerCase();
+    }
+    return ImportDb.all()
+      .filter((f) => f.name.toLowerCase().indexOf(wordToComplete) > -1)
+      .map((i) => this.buildCompletionItem(i, document));
   }
 
-  private buildCompletionItem(imp: ImportObject, document: vscode.TextDocument): any {
+  private buildCompletionItem(
+    imp: ImportObject,
+    document: vscode.TextDocument
+  ): vscode.CompletionItem {
+    console.log(`Import ${imp.name} from ${imp.getPath(document)}`);
     return {
       label: imp.name,
       kind: vscode.CompletionItemKind.Reference,
       detail: `import from ${imp.getPath(document)}`,
-      documentation: `Import ${imp.name} from ${imp.getPath(document)}`,
+      documentation: 'Bob',
       command: {
         title: 'AI: Autocomplete',
         command: 'extension.resolveImport',

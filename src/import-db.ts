@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import * as vscode from 'vscode';
 import { PathHelper } from './helpers/path-helper';
 
@@ -29,10 +28,7 @@ export class ImportObject {
       const sourceRoot = vscode.workspace.getConfiguration('autoimport').get<string>('sourceRoot');
       basePath = PathHelper.joinPaths(vscode.workspace.rootPath, sourceRoot);
     }
-    return PathHelper.normalisePath(
-      PathHelper.getRelativePath(basePath, this.file.fsPath),
-      absolute,
-    );
+    return PathHelper.normalisePath(PathHelper.getRelativePath(basePath, this.file), absolute);
   }
 }
 
